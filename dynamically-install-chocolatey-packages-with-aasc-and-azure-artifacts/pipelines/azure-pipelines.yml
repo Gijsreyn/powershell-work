@@ -1,0 +1,31 @@
+variables:
+  pool: windows-latest
+
+pool: 
+  vmImage: $(pool)
+
+stages:
+
+  - stage: 'Development'
+    jobs:
+
+      - job: 'Development'
+        displayName: 'Apply and register DSC configuration'
+        steps:
+
+          - task: AzurePowerShell@5
+            displayName: 'Apply and register DSC configuration'
+            inputs:
+              azureSubscription: '<azureSubscription>'
+              ScriptType: 'FilePath'
+              ScriptPath: '$(System.DefaultWorkingDirectory)\scripts\Start-AzureDscConfiguration.ps1'
+              ScriptArguments: >
+                -AutomationAccountName '<automationAccountName>'
+                -ResourceGroupName '<resourceGroupName>'
+                -SourceFile '$(System.DefaultWorkingDirectory)\src\Configurations\ChocolateyInstaller.ps1'
+                -StorageAccountName '<storageAccountName>'
+                -AdoToken $(System.AccessToken) # Either pass in a long access token with job timeout or use own PAT with read/write permission on ADO artifacts
+                -AdditionalParameter 'StorageAccountName=<storageAccountName>;ResourceGroupName=<resourceGroupName>'
+                -Environment '$(System.StageDisplayName)'
+              azurePowerShellVersion: 'LatestVersion'
+
